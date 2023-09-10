@@ -43,6 +43,9 @@
   "bugs": {
     "url": "https://github.com/MutantNFTs/cardano-tx-builder/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/MutantNFTs/cardano-tx-builder#readme",
   "devDependencies": {
     "@types/jest": "^29.5.2",
