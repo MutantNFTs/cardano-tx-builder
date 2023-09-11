@@ -10,3 +10,6 @@ export * from "./toScriptDataHash";
 export * from "./transaction.builder";
 export * from "./types";
 export * from "./valueBuilder";
+export * from "./decodeAssetMap";
+export * from "./decodeBalance";
+export * from "./decodeUtxo";

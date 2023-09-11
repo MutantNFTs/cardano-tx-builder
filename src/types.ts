@@ -61,6 +61,11 @@ export type PostAlonzoEncodedOutput = Map<
   Buffer | EncodedValue | EncodedDatum
 >;
 
+export enum DatumOption {
+  Hash = 0,
+  Inline = 1,
+}
+
 export type DecodedUTxO = [EncodedInput, EncodedOutput];
 
 export type AssetMap = {
@@ -87,7 +92,13 @@ export type PlutusDataField = {
   plutusData?: PlutusData;
 };
 
-export type PlutusDataFieldValue = string | Buffer | Map<unknown, unknown> | number | PlutusDataFieldValue[] | Tagged;
+export type PlutusDataFieldValue =
+  | string
+  | Buffer
+  | Map<unknown, unknown>
+  | number
+  | PlutusDataFieldValue[]
+  | Tagged;
 
 export type PlutusData = {
   constructor: number;
