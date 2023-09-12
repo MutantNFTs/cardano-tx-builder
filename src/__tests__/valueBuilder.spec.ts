@@ -80,6 +80,10 @@ describe("ValueBuilder", () => {
             valueBuilder.addLovelace(-1000000n);
           });
 
+          it("should return -1000000 from getTotalLovelace", () => {
+            expect(valueBuilder.getTotalLovelace()).toBe(-1000000n);
+          });
+
           it("should return the asset along with the negative lovelace on getNegativeValues", () => {
             expect(valueBuilder.getNegativeValues()).toEqual({
               assets: {
