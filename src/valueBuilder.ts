@@ -3,7 +3,13 @@ import { getAssetDetails } from "@mutants/cardano-utils";
 import { assetListToMap } from "./assetListToMap";
 import { assetMapToList } from "./assetMapToList";
 import { getMinAssetMapCost } from "./getMinUTxOCost";
-import { AssetMap, AssetValue, UTxO, Value } from "./types";
+import {
+  AssetMap,
+  AssetValue,
+  BlockfrostAssetValue,
+  UTxO,
+  Value,
+} from "./types";
 
 export class ValueBuilder {
   private totalLovelace: bigint;
@@ -125,9 +131,9 @@ export class ValueBuilder {
    * Take an array of asset values and load them into the map
    * @param values
    */
-  loadValues(values: AssetValue[]) {
+  loadValues(values: (AssetValue | BlockfrostAssetValue)[]) {
     for (const value of values) {
-      this.addAsset(value.unit, value.quantity);
+      this.addAsset(value.unit, BigInt(value.quantity));
     }
 
     return this;

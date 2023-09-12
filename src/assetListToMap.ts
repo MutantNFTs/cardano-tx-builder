@@ -7,7 +7,14 @@ export const assetListToMap = (
 ) => {
   return assets.reduce<AssetMap>(
     (assetMap: AssetMap, asset: AssetValue | BlockfrostAssetValue) => {
-      const details = getAssetDetails(asset.unit);
+      const details =
+        asset.unit === "lovelace"
+          ? {
+              assetPolicy: "",
+              assetName: "",
+              name: "",
+            }
+          : getAssetDetails(asset.unit);
 
       if (assetMap[details.assetPolicy]?.[details.assetName]) {
         assetMap[details.assetPolicy][details.assetName] += BigInt(
