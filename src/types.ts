@@ -125,6 +125,11 @@ export type AssetValue = {
   quantity: bigint;
 };
 
+export type BlockfrostAssetValue = {
+  unit: string;
+  quantity: bigint | string;
+};
+
 export enum RedeemerTag {
   Spend = 0,
   Mint = 1,
