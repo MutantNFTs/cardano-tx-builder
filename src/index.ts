@@ -13,3 +13,8 @@ export * from "./valueBuilder";
 export * from "./decodeAssetMap";
 export * from "./decodeBalance";
 export * from "./decodeUtxo";
+export * from "./assetMapToList";
+export * from "./assetListToMap";
+export * from "./utxoContainsAsset";
+export * from "./getMinUTxOCost";
+export * from "./selectUtxosByValue";

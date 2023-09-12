@@ -14,6 +14,10 @@ describe("ValueBuilder", () => {
     valueBuilder = new ValueBuilder();
   });
 
+  test("should initialize empty", () => {
+    expect(valueBuilder.isEmpty()).toBe(true);
+  });
+
   describe("when I add an asset that still does not exist", () => {
     beforeEach(() => {
       valueBuilder.addAsset(mockPolicyId1 + mockAssetName1, 1n);
@@ -38,6 +42,10 @@ describe("ValueBuilder", () => {
         });
       });
 
+      it("should return isEmpty as true", () => {
+        expect(valueBuilder.isEmpty()).toBe(true);
+      });
+
       describe("when I remove the asset again", () => {
         beforeEach(() => {
           valueBuilder.addAsset(mockPolicyId1 + mockAssetName1, -1n);
@@ -49,6 +57,38 @@ describe("ValueBuilder", () => {
             assets: {
               [mockPolicyId1]: { [mockAssetName1]: -1n },
             },
+          });
+        });
+
+        it("should return isEmpty as true", () => {
+          expect(valueBuilder.isEmpty()).toBe(true);
+        });
+
+        it("should return the asset on getNegativeValues", () => {
+          expect(valueBuilder.getNegativeValues()).toEqual({
+            assets: {
+              "2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411": {
+                "000de1404d5554414e5432353537": -1n,
+              },
+            },
+            coin: 0,
+          });
+        });
+
+        describe("when I remove 1 ADA", () => {
+          beforeEach(() => {
+            valueBuilder.addLovelace(-1000000n);
+          });
+
+          it("should return the asset along with the negative lovelace on getNegativeValues", () => {
+            expect(valueBuilder.getNegativeValues()).toEqual({
+              assets: {
+                "2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411": {
+                  "000de1404d5554414e5432353537": -1n,
+                },
+              },
+              coin: -1000000n,
+            });
           });
         });
       });
