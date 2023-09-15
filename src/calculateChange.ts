@@ -1,7 +1,8 @@
-import { AssetValue, UTxO, Value } from "./types";
+import { AssetValue, TxOut, UTxO, Value } from "./types";
 import { ValueBuilder } from "./valueBuilder";
+import { valueToAssetList } from "./valueToAssetList";
 
-export const calculateChange = (
+const calculateChangeBasedOnRequiredValue = (
   inputs: UTxO[],
   required: AssetValue[]
 ): Value => {
@@ -26,4 +27,20 @@ export const calculateChange = (
   valueBuilder.abs();
 
   return valueBuilder.build();
+};
+
+export const calculateChange = (inputs: UTxO[], outputs: TxOut[]) => {
+  const totalOutputValue = outputs.reduce(
+    (valueBuilder: ValueBuilder, output: TxOut) => {
+      valueBuilder.addValue(output.value);
+
+      return valueBuilder;
+    },
+    new ValueBuilder()
+  );
+
+  return calculateChangeBasedOnRequiredValue(
+    inputs,
+    valueToAssetList(totalOutputValue.build())
+  );
 };

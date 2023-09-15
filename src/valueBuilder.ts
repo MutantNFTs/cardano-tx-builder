@@ -32,7 +32,7 @@ export class ValueBuilder {
 
     this.assetMap[policyId] = this.assetMap[policyId] || {};
     this.assetMap[policyId][assetName] =
-      (this.assetMap[policyId][assetName] || 0n) + quantity;
+      (this.assetMap[policyId][assetName] || 0n) + BigInt(quantity);
 
     if (this.assetMap[policyId][assetName] === 0n) {
       delete this.assetMap[policyId][assetName];

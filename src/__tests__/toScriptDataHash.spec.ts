@@ -19,4 +19,16 @@ describe("toScriptDataHash", () => {
       )
     ).toBe("7e00ef9a1a00e610b435e9f173131c1a6d911d568195caec64bb72a468fe1233");
   });
+
+  it("should return the correct hash", () => {
+    const redeemers: Redeemer[] = [
+      [0, 2, { constructor: 0, fields: [] }, [0, 0]],
+    ];
+
+    const data = [{ constructor: 0, fields: [] }];
+
+    expect(toScriptDataHash(redeemers, data, PlutusV2CostModel.costModel)).toBe(
+      "ca0580637ccfd7d2844d80c59af29c0ccf2e78df36993f3888a540482de2bfbe"
+    );
+  });
 });

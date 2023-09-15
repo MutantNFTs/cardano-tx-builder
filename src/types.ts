@@ -24,14 +24,14 @@ export type ProtocolParameters = {
   // min_pool_cost: number;
   // nonce: number;
   // cost_model_id: number;
-  price_mem: number;
-  price_step: number;
+  price_mem: number | null;
+  price_step: number | null;
   // max_tx_ex_mem: number;
   // max_tx_ex_steps: number;
   // max_block_ex_mem: number;
   // max_block_ex_steps: number;
   // max_val_size: number;
-  collateral_percent: number;
+  collateral_percent: number | null;
   // max_collateral_inputs: number;
   // block_id: number;
   // slot_no: string;
@@ -145,4 +145,18 @@ export type StepsUnits = number;
 
 export type ExUnits = [MemUnits, StepsUnits];
 
+export type PreBuildRedeemer = [
+  RedeemerTag,
+  { txHash: string; txIndex: number },
+  PlutusData,
+  ExUnits
+];
+
 export type Redeemer = [RedeemerTag, number, PlutusData, ExUnits];
+
+export type RedeemerEvaluation = {
+  tag: number;
+  index: number;
+  memory: number;
+  steps: number;
+};

@@ -4,7 +4,7 @@ import { ProtocolParameters } from "./types";
 export const calculateFee = (
   transaction: TransactionBuilder,
   protocolParameters: ProtocolParameters,
-  estimateFee = 300000
+  estimateFee = 1000000
 ) => {
   transaction.setFee(estimateFee);
 
@@ -15,8 +15,8 @@ export const calculateFee = (
     (acc, redeemer) =>
       acc +
       Math.ceil(
-        protocolParameters.price_step * redeemer[3][1] +
-          protocolParameters.price_mem * redeemer[3][0]
+        (protocolParameters.price_step || 0.0577) * redeemer[3][1] +
+          (protocolParameters.price_mem || 0.0000721) * redeemer[3][0]
       ),
     0
   );

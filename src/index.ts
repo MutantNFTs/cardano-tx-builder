@@ -19,3 +19,4 @@ export * from "./assetListToValue";
 export * from "./utxoContainsAsset";
 export * from "./getMinUTxOCost";
 export * from "./selectUtxosByValue";
+export * from "./valueToAssetList";

@@ -1,4 +1,5 @@
 import { assetMapToList } from "./assetMapToList";
+import { getMinUTxOCost } from "./getMinUTxOCost";
 import { UTxO, Value } from "./types";
 import { utxoContainsAsset } from "./utxoContainsAsset";
 import { ValueBuilder } from "./valueBuilder";
@@ -42,7 +43,19 @@ export const selectUtxosByValue = (
   }
 
   if (totalSelectedBuilder.getUnlockedLovelace() < valueToSelect.coin) {
-    for (const utxo of utxos) {
+    const sortedByUnlockedAda = [...utxos].sort((u1, u2) => {
+      const unlockedCoin1 =
+        parseFloat(u1.value.coin.toString()) -
+        parseFloat(getMinUTxOCost(u1).toString());
+
+      const unlockedCoin2 =
+        parseFloat(u2.value.coin.toString()) -
+        parseFloat(getMinUTxOCost(u2).toString());
+
+        return unlockedCoin2 - unlockedCoin1;
+    });
+
+    for (const utxo of sortedByUnlockedAda) {
       const totalUtxoLovelace = BigInt(utxo.value.coin);
 
       if (totalUtxoLovelace) {

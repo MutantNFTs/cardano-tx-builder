@@ -2,19 +2,24 @@
 
 import { decode, encode } from "cbor";
 
-import { hexToBytes } from "@mutants/cardano-utils";
-
 import PlutusV2CostModel from "./Plutusv2CostModel.json";
+import { areInputsEqual } from "./areInputsEqual";
 import { calculateChange } from "./calculateChange";
 import { calculateFee } from "./calculateFee";
+import { BabbageTransactionBody, BabbageWitnessSet } from "./constants";
 import { encodeInputs } from "./encodeInputs";
 import { encodeOutput, encodeOutputs } from "./encodeOutputs";
+import { findInputIndex } from "./findInputIndex";
+import { sortInputs } from "./sortInputs";
 import { tagPlutusData } from "./tagPlutusData";
 import { toScriptDataHash } from "./toScriptDataHash";
 import {
+  ExUnits,
   PlutusData,
+  PreBuildRedeemer,
   ProtocolParameters,
   Redeemer,
+  RedeemerEvaluation,
   TxIn,
   TxOut,
   UTxO,
@@ -22,24 +27,24 @@ import {
 } from "./types";
 
 export class TransactionBuilder {
-  private inputs: TxIn[] = [];
+  private inputs: UTxO[] = [];
   private outputs: TxOut[] = [];
   private fee = 0;
   private ttl = 0;
   private collateralInputs: UTxO[] = [];
   private requiredSigners: string[] = [];
   private redeemers: Redeemer[] = [];
+  private preBuildRedeemers: PreBuildRedeemer[] = [];
   private plutusV2Scripts: string[] = [];
   private plutusDatas: PlutusData[] = [];
   private vKeyWitnesses: VKeyWitness[] = [];
-  private withdrawals: Map<Buffer, number> | null = null;
-  private validityIntervalStart: number | null = null;
+  private changeAddress: string | null = null;
   private totalCollateral = 0;
 
   /**
    * Initialize a transaction builder.
    *
-   * @param protocolParameters The protocol pameters of the currnet epoch.
+   * @param protocolParameters The protocol pameters of the current epoch.
    * Important: default values should not be used in production.
    */
   constructor(
@@ -52,7 +57,7 @@ export class TransactionBuilder {
     }
   ) {}
 
-  public setInputs(inputs: TxIn[]) {
+  public setInputs(inputs: UTxO[]) {
     this.inputs = inputs;
   }
 
@@ -64,35 +69,20 @@ export class TransactionBuilder {
     this.ttl = ttl;
   }
 
-  public setWithdrawals(withdrawals: Map<Buffer, number>) {
-    this.withdrawals = withdrawals;
-  }
-
-  public setValidityIntervalStart(validityIntervalStart: number) {
-    this.validityIntervalStart = validityIntervalStart;
-  }
-
   public setCollateralInputs(collateralInputs: UTxO[]) {
     this.collateralInputs = collateralInputs;
+  }
+
+  public setProtocolParameters(protocolParameters: ProtocolParameters) {
+    this.protocolParameters = protocolParameters;
   }
 
   public setRequiredSigners(requiredSigners: string[]) {
     this.requiredSigners = requiredSigners;
   }
 
-  private sortInputs() {
-    this.inputs = this.inputs.sort((a, b) => {
-      const firstInputBytes = hexToBytes(a.txHash);
-      const secondInputBytes = hexToBytes(b.txHash);
-
-      if (firstInputBytes > secondInputBytes) {
-        return 1;
-      } else if (secondInputBytes > firstInputBytes) {
-        return -1;
-      }
-
-      return a.txIndex > b.txIndex ? 1 : -1;
-    });
+  public setChangeAddress(address: string | null) {
+    this.changeAddress = address;
   }
 
   public setFee(fee: number) {
@@ -100,13 +90,26 @@ export class TransactionBuilder {
   }
 
   public calculateFee() {
+    this.buildRedeemers();
+
     this.setFee(calculateFee(this, this.protocolParameters));
     this.totalCollateral =
-      (this.fee * this.protocolParameters.collateral_percent) / 100;
+      (this.fee * (this.protocolParameters.collateral_percent || 150)) / 100;
   }
 
-  public setRedeemers(redeemers: Redeemer[]) {
-    this.redeemers = redeemers;
+  private buildRedeemers() {
+    if (this.preBuildRedeemers.length) {
+      this.redeemers = this.preBuildRedeemers.map((redeemer) => [
+        redeemer[0],
+        findInputIndex(this.inputs, redeemer[1]),
+        redeemer[2],
+        redeemer[3],
+      ]);
+    }
+  }
+
+  public setRedeemers(redeemers: PreBuildRedeemer[]) {
+    this.preBuildRedeemers = redeemers;
   }
 
   public setPlutusDatas(plutusDatas: PlutusData[]) {
@@ -136,50 +139,53 @@ export class TransactionBuilder {
   }
 
   public buildBody(): Map<number, unknown> {
-    /**
-      transaction_body =
-        { 0 : set<transaction_input>    ; inputs
-        , 1 : [* transaction_output]
-        , 2 : coin                      ; fee
-        , ? 3 : uint                    ; time to live
-        , ? 4 : [* certificate]
-        , ? 5 : withdrawals
-        , ? 6 : update
-        , ? 7 : auxiliary_data_hash
-        , ? 8 : uint                    ; validity interval start
-        , ? 9 : mint
-        , ? 11 : script_data_hash
-        , ? 13 : set<transaction_input> ; collateral inputs
-        , ? 14 : required_signers
-        , ? 15 : network_id
-        , ? 16 : transaction_output     ; collateral return; New
-        , ? 17 : coin                   ; total collateral; New
-        , ? 18 : set<transaction_input> ; reference inputs; New
-      }
-     */
-    this.sortInputs(); // This is important to make sure the redeemer tags the correct input index.
+    this.inputs = sortInputs(this.inputs); // This is important to make sure the redeemer tags the correct input index.
 
     const txBody = new Map();
 
-    txBody.set(0, encodeInputs(this.inputs));
-    txBody.set(1, encodeOutputs(this.outputs));
-    txBody.set(2, this.fee); // can't serialize BigInt but also don't see a fee going over 2^53
+    // Simulate an output with current fee value, to make sure
+    // we have the necessary coin input.
+    const feeOutput = {
+      address: this.inputs[0].address,
+      value: {
+        coin: this.fee,
+      },
+    };
+
+    const change = calculateChange(this.inputs, [...this.outputs, feeOutput]);
+
+    const changeOutput = {
+      address: this.changeAddress || this.inputs[0].address,
+      value: change,
+    };
+
+    txBody.set(BabbageTransactionBody.Inputs, encodeInputs(this.inputs));
+    txBody.set(
+      BabbageTransactionBody.Outputs,
+      encodeOutputs([...this.outputs, changeOutput])
+    );
+    txBody.set(BabbageTransactionBody.Fee, this.fee); // can't serialize BigInt but also don't see a fee going over 2^53
 
     if (this.ttl) {
-      txBody.set(3, this.ttl);
+      txBody.set(BabbageTransactionBody.TTL, this.ttl);
     }
 
-    if (this.withdrawals) {
-      txBody.set(5, this.withdrawals);
-    }
+    // TODO: Implement withdrawals
+    // if (this.withdrawals) {
+    //   txBody.set(BabbageTransactionBody.Withdrawals, this.withdrawals);
+    // }
 
-    if (this.validityIntervalStart !== null) {
-      txBody.set(8, this.validityIntervalStart);
-    }
+    // TODO: Implement validity interval start
+    // if (this.validityIntervalStart !== null) {
+    //   txBody.set(
+    //     BabbageTransactionBody.ValidityIntervalStart,
+    //     this.validityIntervalStart
+    //   );
+    // }
 
     if (this.plutusV2Scripts.length) {
       txBody.set(
-        11,
+        BabbageTransactionBody.ScriptDataHash,
         Buffer.from(
           toScriptDataHash(
             this.redeemers,
@@ -192,67 +198,69 @@ export class TransactionBuilder {
     }
 
     if (this.collateralInputs.length) {
-      txBody.set(13, encodeInputs(this.collateralInputs));
+      txBody.set(
+        BabbageTransactionBody.CollateralInputs,
+        encodeInputs(this.collateralInputs)
+      );
     }
 
     if (this.requiredSigners.length) {
       txBody.set(
-        14,
+        BabbageTransactionBody.RequiredSigners,
         this.requiredSigners.map((signer) => Buffer.from(signer, "hex"))
       );
     }
 
     if (this.collateralInputs.length) {
+      const totalCollateral =
+        BigInt(this.totalCollateral.toFixed(0)) || 1000000n;
+
+      const expectedCollateralOutput: TxOut = {
+        address: "", // doesn't matter, it's just to calculate change
+        value: {
+          coin: totalCollateral,
+        },
+      };
+
       txBody.set(
-        16,
+        BabbageTransactionBody.CollateralReturn,
         encodeOutput({
           address: this.collateralInputs[0].address,
           value: calculateChange(this.collateralInputs, [
-            {
-              unit: "lovelace",
-              quantity: BigInt(this.totalCollateral || 1000000),
-            },
+            expectedCollateralOutput,
           ]),
         })
       );
 
-      txBody.set(17, this.totalCollateral || 1000000); // Total collateral
+      txBody.set(
+        BabbageTransactionBody.TotalCollateral,
+        parseInt(totalCollateral.toString())
+      );
     }
 
     return txBody;
   }
 
   public buildWitnessSet(): Map<number, unknown> {
-    /**
-      transaction_witness_set =
-      { ? 0: [* vkeywitness ]
-      , ? 1: [* native_script ]
-      , ? 2: [* bootstrap_witness ]
-      , ? 3: [* plutus_v1_script ]
-      , ? 4: [* plutus_data ]
-      , ? 5: [* redeemer ]
-      , ? 6: [* plutus_v2_script ] ; New
-      }
-     */
     const witnessSet = new Map();
 
     if (this.vKeyWitnesses.length) {
-      witnessSet.set(0, this.vKeyWitnesses);
+      witnessSet.set(BabbageWitnessSet.VKeyWitness, this.vKeyWitnesses);
     }
 
-    if (this.plutusDatas.length) {
+    if (this.plutusDatas.length || this.plutusV2Scripts.length) {
       witnessSet.set(
-        4,
+        BabbageWitnessSet.PlutusData,
         this.plutusDatas.map((plutusData) => tagPlutusData(plutusData))
       );
     }
 
-    if (this.redeemers.length) {
+    if (this.preBuildRedeemers.length) {
       witnessSet.set(
-        5,
-        this.redeemers.map((redeemer) => [
+        BabbageWitnessSet.Redeemer,
+        this.preBuildRedeemers.map((redeemer) => [
           redeemer[0],
-          redeemer[1],
+          findInputIndex(this.inputs, redeemer[1]),
           tagPlutusData(redeemer[2]),
           redeemer[3],
         ])
@@ -261,7 +269,7 @@ export class TransactionBuilder {
 
     if (this.plutusV2Scripts.length) {
       witnessSet.set(
-        6,
+        BabbageWitnessSet.PlutusV2Script,
         this.plutusV2Scripts.map((script) => Buffer.from(script, "hex"))
       );
     }
@@ -269,8 +277,48 @@ export class TransactionBuilder {
     return witnessSet;
   }
 
-  public build(isValid = true, metadata: unknown = null) {
+  public build(
+    isValid = true,
+    metadata: unknown = null
+  ): [Map<number, unknown>, Map<number, unknown>, boolean, unknown] {
     return [this.buildBody(), this.buildWitnessSet(), isValid, metadata];
+  }
+
+  public evaluateRedeemerByTxIn(txIn: TxIn, exUnits: ExUnits) {
+    for (const redeemer of this.preBuildRedeemers) {
+      if (areInputsEqual(redeemer[1], txIn)) {
+        redeemer[3] = exUnits;
+      }
+    }
+  }
+
+  public evaluateRedeemerByTagIndex(
+    tag: number,
+    index: number,
+    exUnits: ExUnits
+  ) {
+    this.inputs = sortInputs(this.inputs);
+
+    for (const redeemer of this.preBuildRedeemers) {
+      const redeemerIndex = this.inputs.findIndex(
+        (input) =>
+          input.txHash === redeemer[1].txHash &&
+          input.txIndex === redeemer[1].txIndex
+      );
+
+      if (redeemer[0] === tag && redeemerIndex === index) {
+        redeemer[3] = exUnits;
+      }
+    }
+  }
+
+  public setRedeemerEvaluations(evaluations: RedeemerEvaluation[]) {
+    for (const evaluation of evaluations) {
+      this.evaluateRedeemerByTagIndex(evaluation.tag, evaluation.index, [
+        evaluation.memory,
+        evaluation.steps,
+      ]);
+    }
   }
 
   public serialize(): string {

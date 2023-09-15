@@ -1,10 +1,16 @@
-import { encode, Tagged } from "cbor";
+import { encode, Simple, Tagged } from "cbor";
 
 import { PlutusData, PlutusDataField, PlutusDataFieldValue } from "./types";
 
 export const tagPlutusData = (plutusData: PlutusData): Tagged => {
   const tagNumber = 121 + plutusData.constructor;
   const fields = plutusData.fields.map((field) => wrapPlutusDataField(field));
+
+  if ((plutusData.fields as unknown as Simple).encodeCBOR) {
+    (fields as unknown as Simple).encodeCBOR = (
+      plutusData.fields as unknown as Simple
+    ).encodeCBOR;
+  }
 
   return new Tagged(tagNumber, fields);
 };
