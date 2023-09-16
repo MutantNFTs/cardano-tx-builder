@@ -2,7 +2,7 @@ import { toHexAddress } from "@mutants/cardano-utils";
 
 import { encodeOutputDatum } from "./encodeOutputDatum";
 import { encodeValue } from "./encodeValue";
-import { PostAlonzoEncodedOutput, TxOut } from "./types";
+import { DatumOption, PostAlonzoEncodedOutput, TxOut } from "./types";
 
 export const encodeOutputs = (
   outputs: TxOut[]
@@ -24,7 +24,11 @@ export const encodeOutput = (output: TxOut) => {
   map.set(1, encodedValue);
 
   if (output.datumInlined) {
-    map.set(2, encodeOutputDatum(output.datumInlined));
+    map.set(2, encodeOutputDatum(output.datumInlined, DatumOption.Inline));
+  }
+
+  if (output.datumHash) {
+    map.set(2, encodeOutputDatum(output.datumHash, DatumOption.Hash));
   }
 
   return map;

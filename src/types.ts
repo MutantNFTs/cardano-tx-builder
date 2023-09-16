@@ -109,6 +109,7 @@ export type TxOut = {
   address: string;
   value: Value;
   datumInlined?: string;
+  datumHash?: string;
 };
 
 export type UTxO = {

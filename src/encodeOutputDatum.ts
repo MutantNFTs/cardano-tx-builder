@@ -1,10 +1,12 @@
 import { Tagged } from "cbor";
 
-enum DatumOption {
-  Hash = 0,
-  Inlined = 1,
-}
+import { DatumOption, EncodedDatum } from "./types";
 
-export const encodeOutputDatum = (encodedDatum: string): [number, Tagged] => {
-  return [DatumOption.Inlined, new Tagged(24, Buffer.from(encodedDatum, "hex"))];
+export const encodeOutputDatum = (
+  encodedDatum: string,
+  option: DatumOption
+): EncodedDatum => {
+  return option === DatumOption.Inline
+    ? [DatumOption.Inline, new Tagged(24, Buffer.from(encodedDatum, "hex"))]
+    : [DatumOption.Hash, Buffer.from(encodedDatum, "hex")];
 };
