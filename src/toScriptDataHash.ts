@@ -1,27 +1,29 @@
-import { blake2bHex } from "blakejs";
 import { encode } from "cbor";
 
-import { Buffer } from "buffer";
-
+import { hexToHash } from "./hexToHash";
 import { tagPlutusData } from "./tagPlutusData";
 import { PlutusData, Redeemer } from "./types";
-
-const hexToHash = (value: string) => {
-  return blake2bHex(Buffer.from(value, "hex"), undefined, 32);
-};
 
 export const toScriptDataHash = (
   redeemers: Redeemer[],
   plutusDatas: string | PlutusData[],
   encodedCostModel: string
 ) => {
+  const encodedRedeemers = encode(redeemers).toString("hex");
+  const encodedPlutusDatas =
+    typeof plutusDatas === "string"
+      ? plutusDatas
+      : encode(
+          plutusDatas.map((plutusData) => tagPlutusData(plutusData))
+        ).toString("hex");
+
+  console.log("Generating script data hash", {
+    encodedRedeemers,
+    encodedPlutusDatas,
+    encodedCostModel,
+  });
+
   return hexToHash(
-    encode(redeemers).toString("hex") +
-      (typeof plutusDatas === "string"
-        ? plutusDatas
-        : encode(
-            plutusDatas.map((plutusData) => tagPlutusData(plutusData))
-          ).toString("hex")) +
-      encodedCostModel
+    encode(redeemers).toString("hex") + encodedPlutusDatas + encodedCostModel
   );
 };
