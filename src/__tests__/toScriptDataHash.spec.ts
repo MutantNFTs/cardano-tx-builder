@@ -17,7 +17,7 @@ describe("toScriptDataHash", () => {
         encodedPlutusDatas,
         PlutusV2CostModel.costModel
       )
-    ).toBe("7e00ef9a1a00e610b435e9f173131c1a6d911d568195caec64bb72a468fe1233");
+    ).toBe("ec73598d81bf379500e8b81ade82d8c709ec00e0f5aad577b4150a4cb06425f5");
   });
 
   it("should return the correct hash", () => {
@@ -28,7 +28,7 @@ describe("toScriptDataHash", () => {
     const data = [{ constructor: 0, fields: [] }];
 
     expect(toScriptDataHash(redeemers, data, PlutusV2CostModel.costModel)).toBe(
-      "ca0580637ccfd7d2844d80c59af29c0ccf2e78df36993f3888a540482de2bfbe"
+      "9d88c842d1966bbb048ec166d32a9ef9ce3ad3dabc794f1dbe9adbbb2780e60f"
     );
   });
 });
