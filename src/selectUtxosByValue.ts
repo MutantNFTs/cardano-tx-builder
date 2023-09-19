@@ -1,6 +1,6 @@
 import { assetMapToList } from "./assetMapToList";
 import { getMinUTxOCost } from "./getMinUTxOCost";
-import { UTxO, Value } from "./types";
+import { ProtocolParameters, UTxO, Value } from "./types";
 import { utxoContainsAsset } from "./utxoContainsAsset";
 import { ValueBuilder } from "./valueBuilder";
 
@@ -13,7 +13,8 @@ type RequestResponse = {
 
 export const selectUtxosByValue = (
   utxos: UTxO[],
-  valueToSelect: Value
+  valueToSelect: Value,
+  coinsPerUTxOWord: ProtocolParameters["coins_per_utxo_word"] = "4310"
 ): RequestResponse => {
   const missingValueBuilder = new ValueBuilder();
   const totalSelectedBuilder = new ValueBuilder();
@@ -46,13 +47,13 @@ export const selectUtxosByValue = (
     const sortedByUnlockedAda = [...utxos].sort((u1, u2) => {
       const unlockedCoin1 =
         parseFloat(u1.value.coin.toString()) -
-        parseFloat(getMinUTxOCost(u1).toString());
+        parseFloat(getMinUTxOCost(u1, coinsPerUTxOWord).toString());
 
       const unlockedCoin2 =
         parseFloat(u2.value.coin.toString()) -
-        parseFloat(getMinUTxOCost(u2).toString());
+        parseFloat(getMinUTxOCost(u2, coinsPerUTxOWord).toString());
 
-        return unlockedCoin2 - unlockedCoin1;
+      return unlockedCoin2 - unlockedCoin1;
     });
 
     for (const utxo of sortedByUnlockedAda) {

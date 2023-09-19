@@ -32,6 +32,7 @@ export type ProtocolParameters = {
   // max_block_ex_steps: number;
   // max_val_size: number;
   collateral_percent: number | null;
+  coins_per_utxo_word: string;
   // max_collateral_inputs: number;
   // block_id: number;
   // slot_no: string;
@@ -153,7 +154,7 @@ export type PreBuildRedeemer = [
   ExUnits
 ];
 
-export type Redeemer = [RedeemerTag, number, PlutusData, ExUnits];
+export type Redeemer = [RedeemerTag, number, Tagged, ExUnits];
 
 export type RedeemerEvaluation = {
   tag: number;

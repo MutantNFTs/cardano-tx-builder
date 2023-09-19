@@ -1,4 +1,3 @@
-import { getMinAssetMapCost } from "../getMinUTxOCost";
 import { selectUtxosByValue } from "../selectUtxosByValue";
 
 describe("selectUtxosByValue", () => {
@@ -113,7 +112,7 @@ describe("selectUtxosByValue", () => {
 
     const result = selectUtxosByValue([utxo1, utxo2, utxo3], {
       coin: 7000000n,
-    });
+    }, "4310");
 
     expect(result).toEqual({
       fulfilled: true,
@@ -128,14 +127,6 @@ describe("selectUtxosByValue", () => {
         coin: 8500000n,
       },
     });
-
-    expect(
-      getMinAssetMapCost({
-        "29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6": {
-          "4d494e": 149890731n,
-        },
-      })
-    ).toBeLessThan(1500000n);
   });
 
   test("should work for composed values with lovelace and assets", () => {

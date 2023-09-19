@@ -54,6 +54,7 @@ export class TransactionBuilder {
       price_mem: 0.0577,
       price_step: 0.0000721,
       collateral_percent: 150,
+      coins_per_utxo_word: "4310",
     }
   ) {}
 
@@ -102,7 +103,7 @@ export class TransactionBuilder {
       this.redeemers = this.preBuildRedeemers.map((redeemer) => [
         redeemer[0],
         findInputIndex(this.inputs, redeemer[1]),
-        redeemer[2],
+        tagPlutusData(redeemer[2]),
         redeemer[3],
       ]);
     }
@@ -189,7 +190,7 @@ export class TransactionBuilder {
         Buffer.from(
           toScriptDataHash(
             this.redeemers,
-            this.plutusDatas,
+            this.plutusDatas.length ? this.plutusDatas : "",
             PlutusV2CostModel.costModel
           ),
           "hex"

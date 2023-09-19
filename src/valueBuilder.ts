@@ -1,8 +1,9 @@
 import { getAssetDetails } from "@mutants/cardano-utils";
 
+import { MOCK_ADDRESSES } from "./__mocks__/mocks";
 import { assetListToMap } from "./assetListToMap";
 import { assetMapToList } from "./assetMapToList";
-import { getMinAssetMapCost } from "./getMinUTxOCost";
+import { getMinUTxOCost } from "./getMinUTxOCost";
 import {
   AssetMap,
   AssetValue,
@@ -92,7 +93,15 @@ export class ValueBuilder {
   }
 
   getUnlockedLovelace() {
-    return this.totalLovelace - getMinAssetMapCost(this.assetMap);
+    return (
+      this.totalLovelace -
+      getMinUTxOCost({
+        address: MOCK_ADDRESSES.A, // not needed
+        txHash: "",
+        txIndex: 0,
+        value: this.build(),
+      })
+    );
   }
 
   isEmpty() {

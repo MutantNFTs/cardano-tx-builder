@@ -1,11 +1,13 @@
 import PlutusV2CostModel from "../Plutusv2CostModel.json";
+import { hexToHash } from "../hexToHash";
+import { tagPlutusData } from "../tagPlutusData";
 import { toScriptDataHash } from "../toScriptDataHash";
 import { Redeemer } from "../types";
 
 describe("toScriptDataHash", () => {
   it("should return the correct hash", () => {
     const redeemers: Redeemer[] = [
-      [0, 1, { constructor: 0, fields: [] }, [42879, 15615619]],
+      [0, 1, tagPlutusData({ constructor: 0, fields: [] }), [42879, 15615619]],
     ];
 
     const encodedPlutusDatas =
@@ -17,18 +19,28 @@ describe("toScriptDataHash", () => {
         encodedPlutusDatas,
         PlutusV2CostModel.costModel
       )
-    ).toBe("ec73598d81bf379500e8b81ade82d8c709ec00e0f5aad577b4150a4cb06425f5");
+    ).toBe("cba4dccdb4544e72e66c89e1169e915035728efe16cc85e800cae57d6b5372a2");
   });
 
   it("should return the correct hash", () => {
     const redeemers: Redeemer[] = [
-      [0, 2, { constructor: 0, fields: [] }, [0, 0]],
+      [0, 2, tagPlutusData({ constructor: 0, fields: [] }), [0, 0]],
     ];
 
     const data = [{ constructor: 0, fields: [] }];
 
     expect(toScriptDataHash(redeemers, data, PlutusV2CostModel.costModel)).toBe(
-      "9d88c842d1966bbb048ec166d32a9ef9ce3ad3dabc794f1dbe9adbbb2780e60f"
+      "58ed4484aabde9f89f3817714114462e59477805da28296febdca868bfa5f1d9"
     );
+  });
+
+  it("should return the correct hash", () => {
+    expect(
+      hexToHash(
+        "81840000d879808219a77f1a00ee4683" +
+          // "81d8799fa0ff" +
+          "a10198af1a0003236119032c01011903e819023b00011903e8195e7104011903e818201a0001ca761928eb041959d818641959d818641959d818641959d818641959d818641959d81864186418641959d81864194c5118201a0002acfa182019b551041a000363151901ff00011a00015c3518201a000797751936f404021a0002ff941a0006ea7818dc0001011903e8196ff604021a0003bd081a00034ec5183e011a00102e0f19312a011a00032e801901a5011a0002da781903e819cf06011a00013a34182019a8f118201903e818201a00013aac0119e143041903e80a1a00030219189c011a00030219189c011a0003207c1901d9011a000330001901ff0119ccf3182019fd40182019ffd5182019581e18201940b318201a00012adf18201a0002ff941a0006ea7818dc0001011a00010f92192da7000119eabb18201a0002ff941a0006ea7818dc0001011a0002ff941a0006ea7818dc0001011a0011b22c1a0005fdde00021a000c504e197712041a001d6af61a0001425b041a00040c660004001a00014fab18201a0003236119032c010119a0de18201a00033d7618201979f41820197fb8182019a95d1820197df718201995aa18201a0223accc0a1a0374f693194a1f0a1a02515e841980b30a"
+      )
+    ).toBe("f1fbf3ed359e3a50d81fd89c413e9599a11439e7c2f9f38d83d71a9d74ce7ed7");
   });
 });
