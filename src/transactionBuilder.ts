@@ -14,6 +14,7 @@ import { sortInputs } from "./sortInputs";
 import { tagPlutusData } from "./tagPlutusData";
 import { toScriptDataHash } from "./toScriptDataHash";
 import {
+  DecodedTransaction,
   ExUnits,
   PlutusData,
   PreBuildRedeemer,
@@ -189,7 +190,10 @@ export class TransactionBuilder {
     //   );
     // }
 
-    if (this.plutusV2Scripts.length || this.referenceInputs.some(referenceInput => referenceInput.hasScript)) {
+    if (
+      this.plutusV2Scripts.length ||
+      this.referenceInputs.some((referenceInput) => referenceInput.hasScript)
+    ) {
       txBody.set(
         BabbageTransactionBody.ScriptDataHash,
         Buffer.from(
@@ -245,7 +249,10 @@ export class TransactionBuilder {
     }
 
     if (this.referenceInputs.length) {
-      txBody.set(BabbageTransactionBody.ReferenceInputs, encodeInputs(this.referenceInputs));
+      txBody.set(
+        BabbageTransactionBody.ReferenceInputs,
+        encodeInputs(this.referenceInputs)
+      );
     }
 
     return txBody;
@@ -287,10 +294,7 @@ export class TransactionBuilder {
     return witnessSet;
   }
 
-  public build(
-    isValid = true,
-    metadata: unknown = null
-  ): [Map<number, unknown>, Map<number, unknown>, boolean, unknown] {
+  public build(isValid = true, metadata: unknown = null): DecodedTransaction {
     return [this.buildBody(), this.buildWitnessSet(), isValid, metadata];
   }
 

@@ -163,3 +163,5 @@ export type RedeemerEvaluation = {
   memory: number;
   steps: number;
 };
+
+export type DecodedTransaction = [Map<number, unknown>, Map<number, unknown>, boolean, unknown];
