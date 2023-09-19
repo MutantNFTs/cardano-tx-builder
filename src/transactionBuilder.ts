@@ -189,7 +189,7 @@ export class TransactionBuilder {
     //   );
     // }
 
-    if (this.plutusV2Scripts.length) {
+    if (this.plutusV2Scripts.length || this.referenceInputs.some(referenceInput => referenceInput.hasScript)) {
       txBody.set(
         BabbageTransactionBody.ScriptDataHash,
         Buffer.from(

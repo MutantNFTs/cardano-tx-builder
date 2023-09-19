@@ -78,6 +78,7 @@ export type AssetMap = {
 export type TxIn = {
   txHash: string;
   txIndex: number;
+  hasScript?: boolean;
 };
 
 export type Value = {
