@@ -28,6 +28,7 @@ import {
 
 export class TransactionBuilder {
   private inputs: UTxO[] = [];
+  private referenceInputs: TxIn[] = [];
   private outputs: TxOut[] = [];
   private fee = 0;
   private ttl = 0;
@@ -60,6 +61,10 @@ export class TransactionBuilder {
 
   public setInputs(inputs: UTxO[]) {
     this.inputs = inputs;
+  }
+
+  public setReferenceInputs(inputs: TxIn[]) {
+    this.referenceInputs = inputs;
   }
 
   public setOutputs(outputs: TxOut[]) {
@@ -237,6 +242,10 @@ export class TransactionBuilder {
         BabbageTransactionBody.TotalCollateral,
         parseInt(totalCollateral.toString())
       );
+    }
+
+    if (this.referenceInputs.length) {
+      txBody.set(BabbageTransactionBody.ReferenceInputs, encodeInputs(this.referenceInputs));
     }
 
     return txBody;
