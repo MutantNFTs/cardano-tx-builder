@@ -4,7 +4,7 @@ import { toPaymentAddress } from "@mutants/cardano-utils";
 
 import { MOCK_ADDRESSES, MOCK_TX_HASHES } from "../__mocks__/mocks";
 import { BabbageTransactionBody, BabbageWitnessSet } from "../constants";
-import { TransactionBuilder } from "../transaction.builder";
+import { TransactionBuilder } from "../transactionBuilder";
 import {
   EncodedAssetMap,
   EncodedInput,
@@ -370,7 +370,7 @@ describe("TransactionBuilder", () => {
                     min_fee_b: 155381,
                     price_mem: 0.0577,
                     price_step: 0.0000721,
-                    coins_per_utxo_word: "4310"
+                    coins_per_utxo_word: "4310",
                   });
                   builder.calculateFee();
                   buildResult = builder.build();
@@ -393,7 +393,7 @@ describe("TransactionBuilder", () => {
                     min_fee_b: 155381,
                     price_mem: 0.0577,
                     price_step: 0.0000721,
-                    coins_per_utxo_word: "4310"
+                    coins_per_utxo_word: "4310",
                   });
                   builder.calculateFee();
                   buildResult = builder.build();
@@ -491,7 +491,7 @@ describe("TransactionBuilder", () => {
                   min_fee_b: 155381,
                   price_mem: null,
                   price_step: null,
-                  coins_per_utxo_word: "4310"
+                  coins_per_utxo_word: "4310",
                 });
 
                 builder.setRedeemers([
@@ -613,6 +613,53 @@ describe("TransactionBuilder", () => {
                 ]);
               });
             });
+          });
+        });
+
+        describe("when I setup a plutus v2 validator without plutus data", () => {
+          beforeEach(() => {
+            builder.setPlutusV2Scripts([
+              "58BE010000332323232323232323232232222533300A32001323233001375866010601466010601400690002402000C6002002444A66602000429404C8C94CCC03CCDC78010018A5113330050050010033013003375C60220042930B1BAE00133001001480008888CCCC01CCDC38008018059199980280299B8000448008C0340040080088C014DD5000918019BAA0015734AAE7555CF2AB9F5742AE8930011E581C675061014F3EACE588951DE4B7FAB2DC0A7B4BA16C2944DACE6ED5050001",
+            ]);
+
+            builder.setRedeemers([
+              [
+                RedeemerTag.Spend,
+                {
+                  txHash: MOCK_TX_HASHES.A,
+                  txIndex: 0,
+                },
+                { constructor: 0, fields: [] },
+                [0, 0],
+              ],
+            ]);
+
+            builder.setRequiredSigners([
+              "675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed505",
+            ]);
+
+            builder.setCollateralInputs([
+              {
+                address: MOCK_ADDRESSES.A,
+                txHash: MOCK_TX_HASHES.A,
+                txIndex: 0,
+                value: {
+                  coin: 30_000_000,
+                  assets: {
+                    "2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411":
+                      {
+                        "000de1404d5554414e5432353537": 1n,
+                      },
+                  },
+                },
+              },
+            ]);
+          });
+
+          test("should have the correct output serialized", () => {
+            expect(builder.serialize()).toEqual(
+              "84a900828258201b6480013b12d018e70f206281add49117cfe74a710f9fb57fd0619e8555b50800825820d3d5bb30a2a7dce6c1d2202f7c0f089bd137a4d73c6f5454ccec81b8e587423e000182a200583901f52c28481365fa384138e4085e858e7653794ca6defa93010b30ad73500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf011a02faf080a200583901adde9a635f548fa97b666b25cf4f3ee4d86aedc83b62aa2c3785be28500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf01821a00989680a2581c73056bffdf28f82da5db1f5ac7c06d030c8a551f43889f7f85746a4aa14950524544313338343301581c2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411a14e000de1404d5554414e54323535370102000319014d0b582075be5e37c2a7f07027713f0cf852aabedb84498d31182e96a4d2390dc2817d3f0d81825820d3d5bb30a2a7dce6c1d2202f7c0f089bd137a4d73c6f5454ccec81b8e587423e000e81581c675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed50510a200583901adde9a635f548fa97b666b25cf4f3ee4d86aedc83b62aa2c3785be28500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf01821a01ba8140a1581c2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411a14e000de1404d5554414e543235353701111a000f4240a304800581840001d87980820000068158c058be010000332323232323232323232232222533300a32001323233001375866010601466010601400690002402000c6002002444a66602000429404c8c94ccc03ccdc78010018a5113330050050010033013003375c60220042930b1bae00133001001480008888cccc01ccdc38008018059199980280299b8000448008c0340040080088c014dd5000918019baa0015734aae7555cf2ab9f5742ae8930011e581c675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed5050001f5f6"
+            );
           });
         });
       });

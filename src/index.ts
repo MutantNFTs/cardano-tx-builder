@@ -7,7 +7,7 @@ export * from "./encodeOutputs";
 export * from "./encodeValue";
 export * from "./tagPlutusData";
 export * from "./toScriptDataHash";
-export * from "./transaction.builder";
+export * from "./transactionBuilder";
 export * from "./types";
 export * from "./valueBuilder";
 export * from "./decodeAssetMap";

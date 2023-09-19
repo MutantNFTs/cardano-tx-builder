@@ -1,4 +1,4 @@
-import { TransactionBuilder } from "./transaction.builder";
+import { TransactionBuilder } from "./transactionBuilder";
 import { ProtocolParameters } from "./types";
 
 export const calculateFee = (
