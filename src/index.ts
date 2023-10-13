@@ -23,3 +23,4 @@ export * from "./utxoContainsAsset";
 export * from "./getMinUTxOCost";
 export * from "./selectUtxosByValue";
 export * from "./valueToAssetList";
+export * from "./getSignedDataPayload";

@@ -57,6 +57,7 @@ export type EncodedOutput =
   | [EncodedAddressHash, EncodedValue]
   | [EncodedAddressHash, EncodedValue, Buffer];
 export type EncodedDatum = [number, Buffer | Tagged];
+export type EncodedSignedData = [Buffer, Map<string, boolean>, Buffer, Buffer];
 export type PostAlonzoEncodedOutput = Map<
   number,
   Buffer | EncodedValue | EncodedDatum
@@ -164,4 +165,9 @@ export type RedeemerEvaluation = {
   steps: number;
 };
 
-export type DecodedTransaction = [Map<number, unknown>, Map<number, unknown>, boolean, unknown];
+export type DecodedTransaction = [
+  Map<number, unknown>,
+  Map<number, unknown>,
+  boolean,
+  unknown
+];
