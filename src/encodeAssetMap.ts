@@ -2,14 +2,17 @@ import { AssetMap, EncodedAssetMap } from "./types";
 
 export const encodeAssetMap = (assetMap: AssetMap): EncodedAssetMap => {
   const encodedMap = new Map<Buffer, Map<Buffer, bigint | number>>();
+  const sortedPolicies = [...Object.keys(assetMap || {})].sort();
 
-  for (const policyId in assetMap) {
+  for (const policyId of sortedPolicies) {
     const policyIdAssetsMap = new Map<Buffer, bigint | number>();
+    const assets = assetMap[policyId];
+    const sortedAssets = [...Object.keys(assets || {})].sort();
 
-    for (const assetName in assetMap[policyId]) {
+    for (const assetName of sortedAssets) {
       policyIdAssetsMap.set(
         Buffer.from(assetName, "hex"),
-        parseInt(assetMap[policyId][assetName].toString())
+        parseInt(assets[assetName].toString())
       );
     }
 
