@@ -10,6 +10,7 @@ import { BabbageTransactionBody, BabbageWitnessSet } from "./constants";
 import { encodeInputs } from "./encodeInputs";
 import { encodeOutput, encodeOutputs } from "./encodeOutputs";
 import { findInputIndex } from "./findInputIndex";
+import { hexToHash } from "./hexToHash";
 import { sortInputs } from "./sortInputs";
 import { tagPlutusData } from "./tagPlutusData";
 import { toScriptDataHash } from "./toScriptDataHash";
@@ -263,6 +264,13 @@ export class TransactionBuilder {
       txBody.set(
         BabbageTransactionBody.ReferenceInputs,
         encodeInputs(this.referenceInputs)
+      );
+    }
+
+    if (this.metadata) {
+      txBody.set(
+        BabbageTransactionBody.AuxiliaryDataHash,
+        Buffer.from(hexToHash(encode(this.metadata).toString("hex")), "hex")
       );
     }
 
