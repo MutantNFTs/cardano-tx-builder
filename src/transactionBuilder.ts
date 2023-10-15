@@ -42,6 +42,7 @@ export class TransactionBuilder {
   private vKeyWitnesses: VKeyWitness[] = [];
   private changeAddress: string | null = null;
   private totalCollateral = 0;
+  private metadata: Map<number, Map<string, string[]>> | null = null;
 
   /**
    * Initialize a transaction builder.
@@ -139,6 +140,16 @@ export class TransactionBuilder {
 
   public setPlutusV2Scripts(scripts: string[]) {
     this.plutusV2Scripts = scripts;
+  }
+
+  public setMetadataMsg(messages: string[]) {
+    const metadataMessage = new Map();
+    metadataMessage.set("msg", messages);
+
+    const metadataWithLabel = new Map();
+    metadataWithLabel.set(674, metadataMessage);
+
+    this.metadata = metadataWithLabel;
   }
 
   public getRedeemers() {
@@ -294,8 +305,8 @@ export class TransactionBuilder {
     return witnessSet;
   }
 
-  public build(isValid = true, metadata: unknown = null): DecodedTransaction {
-    return [this.buildBody(), this.buildWitnessSet(), isValid, metadata];
+  public build(isValid = true): DecodedTransaction {
+    return [this.buildBody(), this.buildWitnessSet(), isValid, this.metadata];
   }
 
   public evaluateRedeemerByTxIn(txIn: TxIn, exUnits: ExUnits) {
