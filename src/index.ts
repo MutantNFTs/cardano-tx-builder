@@ -24,3 +24,5 @@ export * from "./getMinUTxOCost";
 export * from "./selectUtxosByValue";
 export * from "./valueToAssetList";
 export * from "./getSignedDataPayload";
+export * from "./assetToAssetValue";
+export * from "./assetsToNftAssetValues";
