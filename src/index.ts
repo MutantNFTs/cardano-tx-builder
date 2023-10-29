@@ -26,3 +26,4 @@ export * from "./valueToAssetList";
 export * from "./getSignedDataPayload";
 export * from "./assetToAssetValue";
 export * from "./assetsToNftAssetValues";
+export * from "./prepareBoundedBytes";
