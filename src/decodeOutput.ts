@@ -2,7 +2,7 @@ import { Tagged } from "cbor";
 
 import { toPaymentAddress } from "@mutants/cardano-utils";
 
-import { decodeAssetMap } from "./decodeAssetMap";
+import { decodeValue } from "./decodeValue";
 import {
   DatumOption,
   EncodedDatum,
@@ -51,20 +51,10 @@ export const decodeOutput = (
     }
   }
 
-  const coin =
-    typeof value === "bigint" || typeof value === "number" ? value : value[0];
-  const assetsMap =
-    typeof value === "bigint" || typeof value === "number"
-      ? undefined
-      : value[1];
-
   return {
     address,
     datumInlined,
     datumHash,
-    value: {
-      coin,
-      assets: assetsMap && decodeAssetMap(assetsMap),
-    },
+    value: decodeValue(value),
   };
 };
