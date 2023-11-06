@@ -79,20 +79,20 @@ export type AssetMap = {
 export type TxIn = {
   txHash: string;
   txIndex: number;
-  hasScript?: boolean;
+  hasScript?: boolean | null;
 };
 
 export type Value = {
   coin: bigint | number;
-  assets?: AssetMap;
+  assets?: AssetMap | null;
 };
 
 export type PlutusDataField = {
-  bytes?: string | Buffer;
-  list?: PlutusDataField[];
-  map?: Map<unknown, unknown>;
-  int?: number;
-  plutusData?: PlutusData;
+  bytes?: string | Buffer | null;
+  list?: PlutusDataField[] | null;
+  map?: Map<unknown, unknown> | null;
+  int?: number | null;
+  plutusData?: PlutusData | null;
 };
 
 export type PlutusDataFieldValue =
@@ -111,8 +111,8 @@ export type PlutusData = {
 export type TxOut = {
   address: string;
   value: Value;
-  datumInlined?: string;
-  datumHash?: string;
+  datumInlined?: string | null;
+  datumHash?: string | null;
 };
 
 export type UTxO = {
@@ -120,8 +120,8 @@ export type UTxO = {
   txIndex: number;
   address: string;
   value: Value;
-  datumInlined?: string;
-  datumHash?: string;
+  datumInlined?: string | null;
+  datumHash?: string | null;
 };
 
 export type AssetValue = {
