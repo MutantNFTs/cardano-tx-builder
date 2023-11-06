@@ -4,6 +4,9 @@ import { AssetMap } from "../types";
 describe("assetMapToList", () => {
   test("should return the correct asset list", () => {
     const assets: AssetMap = {
+      "": {
+        "": 10000000n,
+      },
       "0c442180dd6163682d8e03b271caefb4944a24412bdd07adafb04ccb": {
         "50494e41434f4c414441": 2500n,
       },
@@ -90,6 +93,10 @@ describe("assetMapToList", () => {
     };
 
     expect(assetMapToList(assets)).toEqual([
+      {
+        quantity: 10000000n,
+        unit: "lovelace",
+      },
       {
         quantity: 2500n,
         unit: "0c442180dd6163682d8e03b271caefb4944a24412bdd07adafb04ccb50494e41434f4c414441",

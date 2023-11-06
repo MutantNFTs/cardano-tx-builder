@@ -9,7 +9,7 @@ export const assetMapToList = (assetMap: AssetMap) => {
       const quantity = assetMap[policyId][assetName];
 
       list.push({
-        unit: asset,
+        unit: asset || "lovelace",
         quantity,
       });
     }
