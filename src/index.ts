@@ -29,3 +29,4 @@ export * from "./assetsToNftAssetValues";
 export * from "./prepareBoundedBytes";
 export * from "./encodeValue";
 export * from "./decodeValue";
+export * from "./encodeValueAsMap";
