@@ -11,6 +11,7 @@ import { encodeInputs } from "./encodeInputs";
 import { encodeOutput, encodeOutputs } from "./encodeOutputs";
 import { findInputIndex } from "./findInputIndex";
 import { hexToHash } from "./hexToHash";
+import { organizeOutputs } from "./organizeOutputs";
 import { sortInputs } from "./sortInputs";
 import { tagPlutusData } from "./tagPlutusData";
 import { toScriptDataHash } from "./toScriptDataHash";
@@ -181,7 +182,7 @@ export class TransactionBuilder {
     txBody.set(BabbageTransactionBody.Inputs, encodeInputs(this.inputs));
     txBody.set(
       BabbageTransactionBody.Outputs,
-      encodeOutputs([...this.outputs, changeOutput])
+      encodeOutputs(organizeOutputs([...this.outputs, changeOutput]))
     );
     txBody.set(BabbageTransactionBody.Fee, this.fee); // can't serialize BigInt but also don't see a fee going over 2^53
 
@@ -229,7 +230,7 @@ export class TransactionBuilder {
     if (this.requiredSigners.length) {
       txBody.set(
         BabbageTransactionBody.RequiredSigners,
-        this.requiredSigners.map((signer) => Buffer.from(signer, "hex"))
+        this.requiredSigners.sort().map((signer) => Buffer.from(signer, "hex"))
       );
     }
 
