@@ -30,3 +30,4 @@ export * from "./prepareBoundedBytes";
 export * from "./encodeValue";
 export * from "./decodeValue";
 export * from "./encodeValueAsMap";
+export * from "./fromValueToUTxO";
