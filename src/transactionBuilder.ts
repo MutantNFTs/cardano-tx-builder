@@ -358,4 +358,8 @@ export class TransactionBuilder {
   public serialize(): string {
     return encode(this.build()).toString("hex");
   }
+
+  public serializeBody(): string {
+    return encode(this.buildBody()).toString("hex");
+  }
 }
