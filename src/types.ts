@@ -42,6 +42,7 @@ export type EncodedTxHash = Buffer;
 export type EncodedPolicyId = Buffer;
 export type EncodedAssetName = Buffer;
 export type EncodedAddressHash = Buffer;
+export type EncodedRequiredSigner = Buffer;
 export type EncodedValue = [Lovelace, EncodedAssetMap] | Lovelace;
 
 export type EncodedAssetMap = Map<
@@ -53,6 +54,7 @@ export type TxIndex = number;
 export type Lovelace = bigint | number;
 export type CborTransaction = string;
 export type EncodedInput = [EncodedTxHash, TxIndex];
+export type EncodedRequiredSigners = EncodedRequiredSigner[];
 export type EncodedOutput =
   | [EncodedAddressHash, EncodedValue]
   | [EncodedAddressHash, EncodedValue, Buffer];
