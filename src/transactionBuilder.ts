@@ -203,6 +203,13 @@ export class TransactionBuilder {
     //   );
     // }
 
+    if (this.metadata) {
+      txBody.set(
+        BabbageTransactionBody.AuxiliaryDataHash,
+        Buffer.from(hexToHash(encode(this.metadata).toString("hex")), "hex")
+      );
+    }
+
     if (
       this.plutusV2Scripts.length ||
       this.referenceInputs.some((referenceInput) => referenceInput.hasScript)
@@ -265,13 +272,6 @@ export class TransactionBuilder {
       txBody.set(
         BabbageTransactionBody.ReferenceInputs,
         encodeInputs(this.referenceInputs)
-      );
-    }
-
-    if (this.metadata) {
-      txBody.set(
-        BabbageTransactionBody.AuxiliaryDataHash,
-        Buffer.from(hexToHash(encode(this.metadata).toString("hex")), "hex")
       );
     }
 
