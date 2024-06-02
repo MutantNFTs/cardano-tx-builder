@@ -115,7 +115,7 @@ We have inputs, outputs, permission to spend the inputs and the fee is calculate
 To do that we must first serialize our tx and then we can submit the result through the connected wallet api:
 
 ```ts
-const signedTx = builder.serialize();
+const signedTx = transactionBuilder.serialize();
 
 try {
   const txHash = await walletApi.submitTx(signedTx);
@@ -132,5 +132,44 @@ try {
 }
 ```
 
+### Advanced usage
+This library also supports more complex operations, like using validators.
+You can setup PlutusV2 scripts and collateral inputs, for example:
 
+```ts
+transactionBuilder.setCollateralInputs(collateralInputs); // Same format of regular inputs, change is also calculated automatically
 
+// Inline PlutusV2 script
+transactionBuilder.setPlutusV2Scripts(['REPLACE_FULL_CBOR_SCRIPT']);
+
+// OR you can use PlutusV2 script with reference inputs
+// Make sure to send hasScript as true for the reference input to be setup properly
+transactionBuilder.setReferenceInputs([
+  {
+    txHash: 'REPLACE_TX_HASH',
+    txIndex: 0,
+    hasScript: true,
+  }
+]);
+
+// Setting up redeemers
+builder.setRedeemers([
+  [
+    RedeemerTag.Spend,
+    {
+      txHash: 'REPLACE_VALIDATOR_INPUT_TX_HASH',
+      txIndex: REPLACE_VALIDATOR_INPUT_TX_INDEX,
+    },
+    { constructor: 0, fields: [] },
+    [0, 0], // Evaluation can be calculated after
+  ],
+]);
+
+// After evaluating the transaction you can set the exact cpu/mem values
+builder.setRedeemerEvaluations([{
+  tag: RedeemerTag.Spend,
+  index: 0, // replace with proper input index considering your transaction
+  memory: 18237,
+  steps: 328742
+}]);
+```
