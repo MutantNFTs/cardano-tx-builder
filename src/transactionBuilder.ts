@@ -148,10 +148,15 @@ export class TransactionBuilder {
     const metadataMessage = new Map();
     metadataMessage.set("msg", messages);
 
-    const metadataWithLabel = new Map();
-    metadataWithLabel.set(674, metadataMessage);
+    this.setMetadataPublicLabel(674, metadataMessage);
+  }
 
-    this.metadata = metadataWithLabel;
+  public setMetadataPublicLabel(label: number, value: Map<string, string[]>) {
+    if (!this.metadata) {
+      this.metadata = new Map();
+    }
+
+    this.metadata.set(label, value);
   }
 
   public getRedeemers() {
