@@ -2,6 +2,7 @@
 
 import { decode, encode } from "cbor";
 
+import PlutusV1CostModel from "./Plutusv1CostModel.json";
 import PlutusV2CostModel from "./Plutusv2CostModel.json";
 import { areInputsEqual } from "./areInputsEqual";
 import { calculateChange } from "./calculateChange";
@@ -39,6 +40,7 @@ export class TransactionBuilder {
   private requiredSigners: string[] = [];
   private redeemers: Redeemer[] = [];
   private preBuildRedeemers: PreBuildRedeemer[] = [];
+  private plutusV1Scripts: string[] = [];
   private plutusV2Scripts: string[] = [];
   private plutusDatas: PlutusData[] = [];
   private vKeyWitnesses: VKeyWitness[] = [];
@@ -144,6 +146,10 @@ export class TransactionBuilder {
     this.plutusV2Scripts = scripts;
   }
 
+  public setPlutusV1Scripts(scripts: string[]) {
+    this.plutusV1Scripts = scripts;
+  }
+
   public setMetadataMsg(messages: string[]) {
     const metadataMessage = new Map();
     metadataMessage.set("msg", messages);
@@ -232,6 +238,20 @@ export class TransactionBuilder {
       );
     }
 
+    if (this.plutusV1Scripts.length) {
+      txBody.set(
+        BabbageTransactionBody.ScriptDataHash,
+        Buffer.from(
+          toScriptDataHash(
+            this.redeemers,
+            this.plutusDatas.length ? this.plutusDatas : "",
+            PlutusV1CostModel.costModel
+          ),
+          "hex"
+        )
+      );
+    }
+
     if (this.collateralInputs.length) {
       txBody.set(
         BabbageTransactionBody.CollateralInputs,
@@ -290,7 +310,11 @@ export class TransactionBuilder {
       witnessSet.set(BabbageWitnessSet.VKeyWitness, this.vKeyWitnesses);
     }
 
-    if (this.plutusDatas.length || this.plutusV2Scripts.length) {
+    if (
+      this.plutusDatas.length ||
+      this.plutusV2Scripts.length ||
+      this.plutusV1Scripts.length
+    ) {
       witnessSet.set(
         BabbageWitnessSet.PlutusData,
         this.plutusDatas.map((plutusData) => tagPlutusData(plutusData))
@@ -313,6 +337,13 @@ export class TransactionBuilder {
       witnessSet.set(
         BabbageWitnessSet.PlutusV2Script,
         this.plutusV2Scripts.map((script) => Buffer.from(script, "hex"))
+      );
+    }
+
+    if (this.plutusV1Scripts.length) {
+      witnessSet.set(
+        BabbageWitnessSet.PlutusV1Script,
+        this.plutusV1Scripts.map((script) => Buffer.from(script, "hex"))
       );
     }
 

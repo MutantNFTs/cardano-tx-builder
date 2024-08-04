@@ -622,6 +622,382 @@ describe("TransactionBuilder", () => {
           });
         });
 
+        describe("when I setup a plutus v1 validator to redeem the first input", () => {
+          beforeEach(() => {
+            builder.setPlutusV1Scripts([
+              "58BE010000332323232323232323232232222533300A32001323233001375866010601466010601400690002402000C6002002444A66602000429404C8C94CCC03CCDC78010018A5113330050050010033013003375C60220042930B1BAE00133001001480008888CCCC01CCDC38008018059199980280299B8000448008C0340040080088C014DD5000918019BAA0015734AAE7555CF2AB9F5742AE8930011E581C675061014F3EACE588951DE4B7FAB2DC0A7B4BA16C2944DACE6ED5050001",
+            ]);
+
+            builder.setPlutusDatas([
+              {
+                constructor: 0,
+                fields: [
+                  {
+                    int: 42,
+                  },
+                ],
+              },
+            ]);
+
+            builder.setRedeemers([
+              [
+                RedeemerTag.Spend,
+                {
+                  txHash: MOCK_TX_HASHES.A,
+                  txIndex: 0,
+                },
+                { constructor: 0, fields: [] },
+                [0, 0],
+              ],
+            ]);
+
+            builder.setRequiredSigners([
+              "675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed505",
+            ]);
+
+            builder.setCollateralInputs([
+              {
+                address: MOCK_ADDRESSES.A,
+                txHash: MOCK_TX_HASHES.A,
+                txIndex: 0,
+                value: {
+                  coin: 30_000_000,
+                  assets: {
+                    "2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411":
+                      {
+                        "000de1404d5554414e5432353537": 1n,
+                        "000de1404d5554414e5432353536": 1n,
+                      },
+                    "0d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5414":
+                      {
+                        "000de1404d5554414e5432353533": 1n,
+                        "000de1404d5554414e5432353532": 1n,
+                      },
+                  },
+                },
+              },
+            ]);
+          });
+
+          describe("when I build the transaction", () => {
+            beforeEach(() => {
+              buildResult = builder.build();
+            });
+
+            test("should have the plutus script in the witness set", () => {
+              const script = buildResult[1].get(
+                BabbageWitnessSet.PlutusV1Script
+              ) as Buffer[];
+
+              expect((script[0] as Buffer).toString("hex")).toBe(
+                "58be010000332323232323232323232232222533300a32001323233001375866010601466010601400690002402000c6002002444a66602000429404c8c94ccc03ccdc78010018a5113330050050010033013003375c60220042930b1bae00133001001480008888cccc01ccdc38008018059199980280299b8000448008c0340040080088c014dd5000918019baa0015734aae7555cf2ab9f5742ae8930011e581c675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed5050001"
+              );
+            });
+
+            test("should have the correct plutus data in the witness set", () => {
+              const data = buildResult[1].get(
+                BabbageWitnessSet.PlutusData
+              ) as Buffer[];
+
+              expect(data[0]).toEqual(new Tagged(121, [42]));
+            });
+
+            test("should have the correct redeemer", () => {
+              const data = buildResult[1].get(
+                BabbageWitnessSet.Redeemer
+              ) as Buffer[];
+
+              expect(data[0]).toEqual([0, 1, new Tagged(121, []), [0, 0]]);
+            });
+
+            test("should have the correct default total collateral", () => {
+              const data = buildResult[0].get(
+                BabbageTransactionBody.TotalCollateral
+              );
+
+              expect(data).toBe(1000000);
+            });
+
+            describe("when I calculate fee", () => {
+              beforeEach(() => {
+                builder.calculateFee();
+                buildResult = builder.build();
+              });
+
+              test("should have the correct fee", () => {
+                const data = buildResult[0].get(BabbageTransactionBody.Fee);
+
+                expect(data).toBe(229037);
+              });
+
+              test("should have the correct total collateral", () => {
+                const data = buildResult[0].get(
+                  BabbageTransactionBody.TotalCollateral
+                );
+
+                expect(data).toBe(343556);
+              });
+
+              test("should serialize correctly", () => {
+                expect(builder.serialize()).toBe(
+                  "84a900828258201b6480013b12d018e70f206281add49117cfe74a710f9fb57fd0619e8555b50800825820d3d5bb30a2a7dce6c1d2202f7c0f089bd137a4d73c6f5454ccec81b8e587423e000182a200583901f52c28481365fa384138e4085e858e7653794ca6defa93010b30ad73500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf011a02faf080a200583901adde9a635f548fa97b666b25cf4f3ee4d86aedc83b62aa2c3785be28500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf01821a009517d3a2581c2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411a14e000de1404d5554414e543235353701581c73056bffdf28f82da5db1f5ac7c06d030c8a551f43889f7f85746a4aa14950524544313338343301021a00037ead0319014d0b5820b8688a795b93e355ab3974afb7a2c3bdcfa8cc46844e655b69052fe20378ad460d81825820d3d5bb30a2a7dce6c1d2202f7c0f089bd137a4d73c6f5454ccec81b8e587423e000e81581c675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed50510a200583901adde9a635f548fa97b666b25cf4f3ee4d86aedc83b62aa2c3785be28500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf01821a01c4857ca2581c0d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5414a24e000de1404d5554414e5432353532014e000de1404d5554414e543235353301581c2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411a24e000de1404d5554414e5432353536014e000de1404d5554414e543235353701111a00053e04a30481d87981182a0581840001d87980820000038158c058be010000332323232323232323232232222533300a32001323233001375866010601466010601400690002402000c6002002444a66602000429404c8c94ccc03ccdc78010018a5113330050050010033013003375c60220042930b1bae00133001001480008888cccc01ccdc38008018059199980280299b8000448008c0340040080088c014dd5000918019baa0015734aae7555cf2ab9f5742ae8930011e581c675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed5050001f5f6"
+                );
+              });
+
+              describe("when I change the collateral percent from protocol parameters to 200 instead of 150", () => {
+                beforeEach(() => {
+                  builder.setProtocolParameters({
+                    collateral_percent: 200,
+                    min_fee_a: 44,
+                    min_fee_b: 155381,
+                    price_mem: 0.0577,
+                    price_step: 0.0000721,
+                    coins_per_utxo_word: "4310",
+                  });
+                  builder.calculateFee();
+                  buildResult = builder.build();
+                });
+
+                test("should have the correct total collateral", () => {
+                  const data = buildResult[0].get(
+                    BabbageTransactionBody.TotalCollateral
+                  );
+
+                  expect(data).toBe(458074);
+                });
+              });
+
+              describe("when I change the collateral percent from protocol parameters to null", () => {
+                beforeEach(() => {
+                  builder.setProtocolParameters({
+                    collateral_percent: null,
+                    min_fee_a: 44,
+                    min_fee_b: 155381,
+                    price_mem: 0.0577,
+                    price_step: 0.0000721,
+                    coins_per_utxo_word: "4310",
+                  });
+                  builder.calculateFee();
+                  buildResult = builder.build();
+                });
+
+                test("should have the correct total collateral", () => {
+                  const data = buildResult[0].get(
+                    BabbageTransactionBody.TotalCollateral
+                  );
+
+                  expect(data).toBe(343556);
+                });
+              });
+            });
+
+            describe("when I set an encoded vkeyWitnesses map", () => {
+              beforeEach(() => {
+                builder.setEncodedVKeyWitnesses(
+                  "a100818258209b3667e7d92d74c1efcb7eb4e0e2157dc2d6334b87167833eede33d7666096245840e7c843699b7ecaf079be19b74564fbcc7a5d97f8bdf8aaacdb91fb70753683fadeac24390f5f5a0414eef380d2b6ffea89ce8bc8abd54c4bb7ae0278220f230d"
+                );
+              });
+
+              describe("when I build the transaction", () => {
+                beforeEach(() => {
+                  buildResult = builder.build();
+                });
+
+                test("should have the correct vkey witnesses", () => {
+                  const data = buildResult[1].get(
+                    BabbageWitnessSet.VKeyWitness
+                  ) as [Buffer, Buffer][];
+
+                  expect(data[0][0].toString("hex")).toBe(
+                    "9b3667e7d92d74c1efcb7eb4e0e2157dc2d6334b87167833eede33d766609624"
+                  );
+                  expect(data[0][1].toString("hex")).toBe(
+                    "e7c843699b7ecaf079be19b74564fbcc7a5d97f8bdf8aaacdb91fb70753683fadeac24390f5f5a0414eef380d2b6ffea89ce8bc8abd54c4bb7ae0278220f230d"
+                  );
+                });
+              });
+            });
+
+            describe("when I set an encoded invalid vkeyWitnesses map", () => {
+              beforeEach(() => {
+                builder.setEncodedVKeyWitnesses("a10001");
+              });
+
+              describe("when I build the transaction", () => {
+                beforeEach(() => {
+                  buildResult = builder.build();
+                });
+
+                test("should have the correct vkey witnesses", () => {
+                  const data = buildResult[1].get(
+                    BabbageWitnessSet.VKeyWitness
+                  ) as [Buffer, Buffer][];
+
+                  expect(data).toEqual(undefined);
+                });
+              });
+            });
+
+            describe("when I set an encoded vkeyWitnesses array", () => {
+              beforeEach(() => {
+                builder.setEncodedVKeyWitnesses(
+                  "818258209b3667e7d92d74c1efcb7eb4e0e2157dc2d6334b87167833eede33d7666096245840e7c843699b7ecaf079be19b74564fbcc7a5d97f8bdf8aaacdb91fb70753683fadeac24390f5f5a0414eef380d2b6ffea89ce8bc8abd54c4bb7ae0278220f230d"
+                );
+              });
+
+              describe("when I build the transaction", () => {
+                beforeEach(() => {
+                  buildResult = builder.build();
+                });
+
+                test("should have the correct vkey witnesses", () => {
+                  const data = buildResult[1].get(
+                    BabbageWitnessSet.VKeyWitness
+                  ) as [Buffer, Buffer][];
+
+                  expect(data[0][0].toString("hex")).toBe(
+                    "9b3667e7d92d74c1efcb7eb4e0e2157dc2d6334b87167833eede33d766609624"
+                  );
+                  expect(data[0][1].toString("hex")).toBe(
+                    "e7c843699b7ecaf079be19b74564fbcc7a5d97f8bdf8aaacdb91fb70753683fadeac24390f5f5a0414eef380d2b6ffea89ce8bc8abd54c4bb7ae0278220f230d"
+                  );
+                });
+              });
+            });
+
+            describe("when I build with multiple redeemers", () => {
+              beforeEach(() => {
+                builder.setProtocolParameters({
+                  collateral_percent: 200,
+                  min_fee_a: 44,
+                  min_fee_b: 155381,
+                  price_mem: null,
+                  price_step: null,
+                  coins_per_utxo_word: "4310",
+                });
+
+                builder.setRedeemers([
+                  [
+                    RedeemerTag.Spend,
+                    {
+                      txHash: MOCK_TX_HASHES.A,
+                      txIndex: 0,
+                    },
+                    { constructor: 0, fields: [] },
+                    [42879, 15615619],
+                  ],
+                  [
+                    RedeemerTag.Spend,
+                    {
+                      txHash: MOCK_TX_HASHES.B,
+                      txIndex: 0,
+                    },
+                    { constructor: 0, fields: [] },
+                    [100000, 25615619],
+                  ],
+                ]);
+
+                builder.calculateFee();
+                buildResult = builder.build();
+              });
+
+              test("should have the correct fee", () => {
+                const data = buildResult[0].get(BabbageTransactionBody.Fee);
+
+                expect(data).toBe(2610115);
+              });
+            });
+          });
+
+          describe("and I evaluate the redeemer by TxIn with cost units 42879, 15615619", () => {
+            beforeEach(() => {
+              builder.evaluateRedeemerByTxIn(
+                {
+                  txHash: MOCK_TX_HASHES.A,
+                  txIndex: 0,
+                },
+                [42879, 15615619]
+              );
+            });
+
+            describe("when I build the transaction", () => {
+              beforeEach(() => {
+                buildResult = builder.build();
+              });
+
+              test("should have the correct redeemer", () => {
+                const data = buildResult[1].get(
+                  BabbageWitnessSet.Redeemer
+                ) as Buffer[];
+
+                expect(data[0]).toEqual([
+                  0,
+                  1,
+                  new Tagged(121, []),
+                  [42879, 15615619],
+                ]);
+              });
+            });
+          });
+
+          describe("and I evaluate the redeemer by tag index with cost units 42879, 15615619", () => {
+            beforeEach(() => {
+              builder.evaluateRedeemerByTagIndex(0, 1, [42879, 15615619]);
+            });
+
+            describe("when I build the transaction", () => {
+              beforeEach(() => {
+                buildResult = builder.build();
+              });
+
+              test("should have the correct redeemer", () => {
+                const data = buildResult[1].get(
+                  BabbageWitnessSet.Redeemer
+                ) as Buffer[];
+
+                expect(data[0]).toEqual([
+                  0,
+                  1,
+                  new Tagged(121, []),
+                  [42879, 15615619],
+                ]);
+              });
+            });
+          });
+
+          describe("and I set redeemer evaluations with cost units 42879, 15615619", () => {
+            beforeEach(() => {
+              builder.setRedeemerEvaluations([
+                {
+                  index: 1,
+                  memory: 42879,
+                  steps: 15615619,
+                  tag: 0,
+                },
+              ]);
+            });
+
+            describe("when I build the transaction", () => {
+              beforeEach(() => {
+                buildResult = builder.build();
+              });
+
+              test("should have the correct redeemer", () => {
+                const data = buildResult[1].get(
+                  BabbageWitnessSet.Redeemer
+                ) as Buffer[];
+
+                expect(data[0]).toEqual([
+                  0,
+                  1,
+                  new Tagged(121, []),
+                  [42879, 15615619],
+                ]);
+              });
+            });
+          });
+        });
+
         describe("when I setup a plutus v2 validator without plutus data", () => {
           beforeEach(() => {
             builder.setPlutusV2Scripts([
