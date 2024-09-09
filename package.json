@@ -1,7 +1,7 @@
 {
   "name": "@mutants/cardano-tx-builder",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.19.0",
   "description": "A package that provides utility functions to build and destructure a cardano transaction",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
