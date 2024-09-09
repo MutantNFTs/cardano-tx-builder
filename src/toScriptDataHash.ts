@@ -9,6 +9,12 @@ export const toScriptDataHash = (
   plutusDatas: string | PlutusData[],
   encodedCostModel: string
 ) => {
+  console.log("toScriptDataHash", {
+    redeemers,
+    plutusDatas,
+    encodedCostModel,
+  });
+
   const encodedPlutusDatas =
     typeof plutusDatas === "string"
       ? plutusDatas

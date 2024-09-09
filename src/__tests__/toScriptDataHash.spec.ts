@@ -19,7 +19,21 @@ describe("toScriptDataHash", () => {
         encodedPlutusDatas,
         PlutusV2CostModel.costModel
       )
-    ).toBe("cba4dccdb4544e72e66c89e1169e915035728efe16cc85e800cae57d6b5372a2");
+    ).toBe("ae62f131d4fa51c9b12f593af1b0545fbd40a60d95fa5b4c232966cbfd1d8fd9");
+  });
+
+  it("should return the correct hash 1", () => {
+    const redeemers: Redeemer[] = [
+      [0, 0, tagPlutusData({ constructor: 0, fields: [] }), [6300, 992100]],
+    ];
+
+    expect(
+      toScriptDataHash(
+        redeemers,
+        "",
+        PlutusV2CostModel.costModel
+      )
+    ).toBe("b53544fb55d7790eb05281d61b591df8b9f2a4f0c92d7da7a77b6e56b2164c1a");
   });
 
   it("should return the correct hash", () => {
@@ -30,7 +44,7 @@ describe("toScriptDataHash", () => {
     const data = [{ constructor: 0, fields: [] }];
 
     expect(toScriptDataHash(redeemers, data, PlutusV2CostModel.costModel)).toBe(
-      "58ed4484aabde9f89f3817714114462e59477805da28296febdca868bfa5f1d9"
+      "1bef8e6920f681691f5e0b1ea3b50fc1c2b8822064b67e590134cbdab671237b"
     );
   });
 
