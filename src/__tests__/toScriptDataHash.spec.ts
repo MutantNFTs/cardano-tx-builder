@@ -1,11 +1,12 @@
+import PlutusV1CostModel from "../Plutusv1CostModel.json";
 import PlutusV2CostModel from "../Plutusv2CostModel.json";
 import { hexToHash } from "../hexToHash";
 import { tagPlutusData } from "../tagPlutusData";
 import { toScriptDataHash } from "../toScriptDataHash";
-import { Redeemer } from "../types";
+import { PlutusData, Redeemer } from "../types";
 
 describe("toScriptDataHash", () => {
-  it("should return the correct hash", () => {
+  it("should return the correct hash 1", () => {
     const redeemers: Redeemer[] = [
       [0, 1, tagPlutusData({ constructor: 0, fields: [] }), [42879, 15615619]],
     ];
@@ -22,21 +23,17 @@ describe("toScriptDataHash", () => {
     ).toBe("ae62f131d4fa51c9b12f593af1b0545fbd40a60d95fa5b4c232966cbfd1d8fd9");
   });
 
-  it("should return the correct hash 1", () => {
+  it("should return the correct hash 2", () => {
     const redeemers: Redeemer[] = [
       [0, 0, tagPlutusData({ constructor: 0, fields: [] }), [6300, 992100]],
     ];
 
-    expect(
-      toScriptDataHash(
-        redeemers,
-        "",
-        PlutusV2CostModel.costModel
-      )
-    ).toBe("b53544fb55d7790eb05281d61b591df8b9f2a4f0c92d7da7a77b6e56b2164c1a");
+    expect(toScriptDataHash(redeemers, "", PlutusV2CostModel.costModel)).toBe(
+      "b53544fb55d7790eb05281d61b591df8b9f2a4f0c92d7da7a77b6e56b2164c1a"
+    );
   });
 
-  it("should return the correct hash", () => {
+  it("should return the correct hash 3", () => {
     const redeemers: Redeemer[] = [
       [0, 2, tagPlutusData({ constructor: 0, fields: [] }), [0, 0]],
     ];
@@ -48,7 +45,7 @@ describe("toScriptDataHash", () => {
     );
   });
 
-  it("should return the correct hash", () => {
+  it("should return the correct hash 4", () => {
     expect(
       hexToHash(
         "81840000d879808219a77f1a00ee4683" +
@@ -56,5 +53,39 @@ describe("toScriptDataHash", () => {
           "a10198af1a0003236119032c01011903e819023b00011903e8195e7104011903e818201a0001ca761928eb041959d818641959d818641959d818641959d818641959d818641959d81864186418641959d81864194c5118201a0002acfa182019b551041a000363151901ff00011a00015c3518201a000797751936f404021a0002ff941a0006ea7818dc0001011903e8196ff604021a0003bd081a00034ec5183e011a00102e0f19312a011a00032e801901a5011a0002da781903e819cf06011a00013a34182019a8f118201903e818201a00013aac0119e143041903e80a1a00030219189c011a00030219189c011a0003207c1901d9011a000330001901ff0119ccf3182019fd40182019ffd5182019581e18201940b318201a00012adf18201a0002ff941a0006ea7818dc0001011a00010f92192da7000119eabb18201a0002ff941a0006ea7818dc0001011a0002ff941a0006ea7818dc0001011a0011b22c1a0005fdde00021a000c504e197712041a001d6af61a0001425b041a00040c660004001a00014fab18201a0003236119032c010119a0de18201a00033d7618201979f41820197fb8182019a95d1820197df718201995aa18201a0223accc0a1a0374f693194a1f0a1a02515e841980b30a"
       )
     ).toBe("f1fbf3ed359e3a50d81fd89c413e9599a11439e7c2f9f38d83d71a9d74ce7ed7");
+  });
+
+  it("should return the correct hash 5", () => {
+    const redeemers: Redeemer[] = [
+      [
+        0,
+        1,
+
+        tagPlutusData({
+          constructor: 0,
+          fields: [],
+        }),
+        [42500, 6784100],
+      ],
+    ];
+
+    const data: PlutusData[] = [
+      {
+        constructor: 0,
+        fields: [
+          {
+            bytes: "D7C4967B97302DF103B002A8C13BD4A5E96BD6AD08CB52D8DC15C121",
+          },
+        ],
+      },
+    ];
+
+    expect(
+      toScriptDataHash(
+        redeemers, // "81840001D879808219A6041A00678464",
+        data, // "81D87981581E581CD7C4967B97302DF103B002A8C13BD4A5E96BD6AD08CB52D8DC15C121",
+        PlutusV1CostModel.costModel
+      )
+    ).toBe("c7af2ecfebc496d5d778620ffb021c330435ddee444dbebba5ee9f5b493cd476");
   });
 });

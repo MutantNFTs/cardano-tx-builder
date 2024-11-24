@@ -5,7 +5,7 @@ import { tagPlutusData } from "./tagPlutusData";
 import { PlutusData, Redeemer } from "./types";
 
 export const toScriptDataHash = (
-  redeemers: Redeemer[],
+  redeemers: string | Redeemer[],
   plutusDatas: string | PlutusData[],
   encodedCostModel: string
 ) => {
@@ -22,7 +22,10 @@ export const toScriptDataHash = (
           plutusDatas.map((plutusData) => tagPlutusData(plutusData))
         ).toString("hex");
 
-  return hexToHash(
-    encode(redeemers).toString("hex") + encodedPlutusDatas + encodedCostModel
-  );
+  const encodedRedeemers =
+    typeof redeemers === "string"
+      ? redeemers
+      : encode(redeemers).toString("hex");
+
+  return hexToHash(encodedRedeemers + encodedPlutusDatas + encodedCostModel);
 };
