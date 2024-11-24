@@ -22,10 +22,7 @@ export const toScriptDataHash = (
           plutusDatas.map((plutusData) => tagPlutusData(plutusData))
         ).toString("hex");
 
-  const encodedRedeemers =
-    typeof redeemers === "string"
-      ? redeemers
-      : encode(redeemers).toString("hex");
-
-  return hexToHash(encodedRedeemers + encodedPlutusDatas + encodedCostModel);
+  return hexToHash(
+    encode(redeemers).toString("hex") + encodedPlutusDatas + encodedCostModel
+  );
 };
