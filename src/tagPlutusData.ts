@@ -1,4 +1,4 @@
-import { encode, Simple, Tagged } from "cbor";
+import { Simple, Tagged } from "cbor";
 
 import { PlutusData, PlutusDataField, PlutusDataFieldValue } from "./types";
 
@@ -20,8 +20,8 @@ export const wrapPlutusDataField = (
 ): PlutusDataFieldValue => {
   if (field.bytes) {
     return field.bytes instanceof Buffer
-      ? encode(field.bytes)
-      : encode(Buffer.from(field.bytes, "hex"));
+      ? field.bytes
+      : Buffer.from(field.bytes, "hex");
   } else if (field.list) {
     return field.list.map<PlutusDataFieldValue>((item) =>
       wrapPlutusDataField(item)

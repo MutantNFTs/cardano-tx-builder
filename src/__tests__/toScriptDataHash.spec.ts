@@ -60,7 +60,6 @@ describe("toScriptDataHash", () => {
       [
         0,
         1,
-
         tagPlutusData({
           constructor: 0,
           fields: [],
@@ -74,7 +73,10 @@ describe("toScriptDataHash", () => {
         constructor: 0,
         fields: [
           {
-            bytes: "D7C4967B97302DF103B002A8C13BD4A5E96BD6AD08CB52D8DC15C121",
+            bytes: Buffer.from(
+              "D7C4967B97302DF103B002A8C13BD4A5E96BD6AD08CB52D8DC15C121",
+              "hex"
+            ),
           },
         ],
       },
@@ -83,9 +85,9 @@ describe("toScriptDataHash", () => {
     expect(
       toScriptDataHash(
         redeemers, // "81840001D879808219A6041A00678464",
-        data, // "81D87981581E581CD7C4967B97302DF103B002A8C13BD4A5E96BD6AD08CB52D8DC15C121",
+        data, // "81D87981581CD7C4967B97302DF103B002A8C13BD4A5E96BD6AD08CB52D8DC15C121",
         PlutusV1CostModel.costModel
       )
-    ).toBe("c7af2ecfebc496d5d778620ffb021c330435ddee444dbebba5ee9f5b493cd476");
+    ).toBe("5321bb1c310a9c3258907bf3115770f8d177a2512df62b152e09ae6a5e5ad002");
   });
 });

@@ -633,7 +633,10 @@ describe("TransactionBuilder", () => {
                 constructor: 0,
                 fields: [
                   {
-                    int: 42,
+                    bytes: Buffer.from(
+                      "D7C4967B97302DF103B002A8C13BD4A5E96BD6AD08CB52D8DC15C121",
+                      "hex"
+                    ),
                   },
                 ],
               },
@@ -699,7 +702,14 @@ describe("TransactionBuilder", () => {
                 BabbageWitnessSet.PlutusData
               ) as Buffer[];
 
-              expect(data[0]).toEqual(new Tagged(121, [42]));
+              expect(data[0]).toEqual(
+                new Tagged(121, [
+                  Buffer.from(
+                    "D7C4967B97302DF103B002A8C13BD4A5E96BD6AD08CB52D8DC15C121",
+                    "hex"
+                  ),
+                ])
+              );
             });
 
             test("should have the correct redeemer", () => {
@@ -727,7 +737,7 @@ describe("TransactionBuilder", () => {
               test("should have the correct fee", () => {
                 const data = buildResult[0].get(BabbageTransactionBody.Fee);
 
-                expect(data).toBe(229037);
+                expect(data).toBe(231501);
               });
 
               test("should have the correct total collateral", () => {
@@ -735,12 +745,12 @@ describe("TransactionBuilder", () => {
                   BabbageTransactionBody.TotalCollateral
                 );
 
-                expect(data).toBe(343556);
+                expect(data).toBe(347252);
               });
 
               test("should serialize correctly", () => {
                 expect(builder.serialize()).toBe(
-                  "84a900828258201b6480013b12d018e70f206281add49117cfe74a710f9fb57fd0619e8555b50800825820d3d5bb30a2a7dce6c1d2202f7c0f089bd137a4d73c6f5454ccec81b8e587423e000182a200583901f52c28481365fa384138e4085e858e7653794ca6defa93010b30ad73500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf011a02faf080a200583901adde9a635f548fa97b666b25cf4f3ee4d86aedc83b62aa2c3785be28500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf01821a009517d3a2581c2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411a14e000de1404d5554414e543235353701581c73056bffdf28f82da5db1f5ac7c06d030c8a551f43889f7f85746a4aa14950524544313338343301021a00037ead0319014d0b5820a9415850873a1b041b1609009cfcb217bcc76efbcc48093d76f07619d01af9ed0d81825820d3d5bb30a2a7dce6c1d2202f7c0f089bd137a4d73c6f5454ccec81b8e587423e000e81581c675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed50510a200583901adde9a635f548fa97b666b25cf4f3ee4d86aedc83b62aa2c3785be28500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf01821a01c4857ca2581c0d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5414a24e000de1404d5554414e5432353532014e000de1404d5554414e543235353301581c2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411a24e000de1404d5554414e5432353536014e000de1404d5554414e543235353701111a00053e04a30481d87981182a0581840001d87980820000038158c058be010000332323232323232323232232222533300a32001323233001375866010601466010601400690002402000c6002002444a66602000429404c8c94ccc03ccdc78010018a5113330050050010033013003375c60220042930b1bae00133001001480008888cccc01ccdc38008018059199980280299b8000448008c0340040080088c014dd5000918019baa0015734aae7555cf2ab9f5742ae8930011e581c675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed5050001f5f6"
+                  "84a900828258201b6480013b12d018e70f206281add49117cfe74a710f9fb57fd0619e8555b50800825820d3d5bb30a2a7dce6c1d2202f7c0f089bd137a4d73c6f5454ccec81b8e587423e000182a200583901f52c28481365fa384138e4085e858e7653794ca6defa93010b30ad73500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf011a02faf080a200583901adde9a635f548fa97b666b25cf4f3ee4d86aedc83b62aa2c3785be28500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf01821a00950e33a2581c2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411a14e000de1404d5554414e543235353701581c73056bffdf28f82da5db1f5ac7c06d030c8a551f43889f7f85746a4aa14950524544313338343301021a0003884d0319014d0b58208cdd4c577aa12ff08f7caac8439081601e9156e1b936cb1da35aaacf477e09b60d81825820d3d5bb30a2a7dce6c1d2202f7c0f089bd137a4d73c6f5454ccec81b8e587423e000e81581c675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed50510a200583901adde9a635f548fa97b666b25cf4f3ee4d86aedc83b62aa2c3785be28500ed9cebc7535c4c49c9a8f3414ca34dbdfeda4fca29c06cccadbdf01821a01c4770ca2581c0d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5414a24e000de1404d5554414e5432353532014e000de1404d5554414e543235353301581c2d37295347d9fbd197ecfd0e4ddef32ef757083c23985049326a5411a24e000de1404d5554414e5432353536014e000de1404d5554414e543235353701111a00054c74a30481d87981581cd7c4967b97302df103b002a8c13bd4a5e96bd6ad08cb52d8dc15c1210581840001d87980820000038158c058be010000332323232323232323232232222533300a32001323233001375866010601466010601400690002402000c6002002444a66602000429404c8c94ccc03ccdc78010018a5113330050050010033013003375c60220042930b1bae00133001001480008888cccc01ccdc38008018059199980280299b8000448008c0340040080088c014dd5000918019baa0015734aae7555cf2ab9f5742ae8930011e581c675061014f3eace588951de4b7fab2dc0a7b4ba16c2944dace6ed5050001f5f6"
                 );
               });
 
@@ -763,7 +773,7 @@ describe("TransactionBuilder", () => {
                     BabbageTransactionBody.TotalCollateral
                   );
 
-                  expect(data).toBe(458074);
+                  expect(data).toBe(463002);
                 });
               });
 
@@ -786,7 +796,7 @@ describe("TransactionBuilder", () => {
                     BabbageTransactionBody.TotalCollateral
                   );
 
-                  expect(data).toBe(343556);
+                  expect(data).toBe(347252);
                 });
               });
             });
@@ -904,7 +914,7 @@ describe("TransactionBuilder", () => {
               test("should have the correct fee", () => {
                 const data = buildResult[0].get(BabbageTransactionBody.Fee);
 
-                expect(data).toBe(2610115);
+                expect(data).toBe(2612579);
               });
             });
           });
